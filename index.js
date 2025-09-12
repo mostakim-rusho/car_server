@@ -24,6 +24,7 @@ async function run() {
     await client.connect();
 
     const serviceCollection = client.db("carDoctor").collection("services");
+    const bookingCollection = client.db("carDoctor").collection("bookings");
     app.get("/services", async (req, res) => {
       const cursor = serviceCollection.find();
       const result = await cursor.toArray();
@@ -32,11 +33,25 @@ async function run() {
     app.get("/services/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
-       const options = {
-      projection: { title: 1, price: 1, service_id: 1 } // ✅ correct key is "projection"
-    };
+      const options = {
+        projection: { title: 1, price: 1, service_id: 1 }, // ✅ correct key is "projection"
+      };
       const result = await serviceCollection.findOne(query, options);
       res.send(result);
+    });
+
+    // booking
+    // booking
+    app.post("/bookings", async (req, res) => {
+      try {
+        const booking = req.body;
+        console.log(booking)
+        const result = await bookingCollection.insertOne(booking); // ✅ ডাটাবেজে save
+        res.send(result); // ✅ response পাঠাও frontend এ
+      } catch (error) {
+        console.error("Booking insert error:", error);
+        res.status(500).send({ message: "Failed to save booking" });
+      }
     });
 
     // Send a ping to confirm a successful connection
