@@ -34,7 +34,7 @@ async function run() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const options = {
-        projection: { title: 1, price: 1, service_id: 1 }, // ✅ correct key is "projection"
+        projection: { title: 1, price: 1, service_id: 1,img:1 }, // ✅ correct key is "projection"
       };
       const result = await serviceCollection.findOne(query, options);
       res.send(result);
@@ -42,10 +42,19 @@ async function run() {
 
     // booking
     // booking
+    app.get("/bookings", async (req, res) => {
+      let query ={};
+      if(req.query?.email){
+        query={email:req.query.email}
+
+      }
+      const result = await bookingCollection.find(query).toArray();
+      res.send(result);
+    });
     app.post("/bookings", async (req, res) => {
       try {
         const booking = req.body;
-        console.log(booking)
+        console.log(booking);
         const result = await bookingCollection.insertOne(booking); // ✅ ডাটাবেজে save
         res.send(result); // ✅ response পাঠাও frontend এ
       } catch (error) {
