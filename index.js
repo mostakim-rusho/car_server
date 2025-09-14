@@ -62,6 +62,25 @@ async function run() {
         res.status(500).send({ message: "Failed to save booking" });
       }
     });
+    // Update booking status (Approve / Pending ইত্যাদি)
+app.patch("/bookings/:id", async (req, res) => {
+  const id = req.params.id;
+  const { status } = req.body;
+  const filter = { _id: new ObjectId(id) };
+  const updateDoc = {
+    $set: { status: status },
+  };
+  const result = await bookingCollection.updateOne(filter, updateDoc);
+  res.send(result);
+});
+
+// Delete a booking
+app.delete("/bookings/:id", async (req, res) => {
+  const id = req.params.id;
+  const query = { _id: new ObjectId(id) };
+  const result = await bookingCollection.deleteOne(query);
+  res.send(result);
+});
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
