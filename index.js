@@ -4,7 +4,16 @@ const cors = require("cors");
 require("dotenv").config();
 const port = process.env.PORT || 5000;
 const app = express();
-app.use(cors());
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "https://cars-doctor-33cc9.web.app",
+      "https://cars-doctor-33cc9.firebaseapp.com",
+    ],
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.dm0waan.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
@@ -21,7 +30,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
 
     const serviceCollection = client.db("carDoctor").collection("services");
     const bookingCollection = client.db("carDoctor").collection("bookings");
@@ -34,7 +43,7 @@ async function run() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const options = {
-        projection: { title: 1, price: 1, service_id: 1,img:1 }, // ✅ correct key is "projection"
+        projection: { title: 1, price: 1, service_id: 1, img: 1 }, // ✅ correct key is "projection"
       };
       const result = await serviceCollection.findOne(query, options);
       res.send(result);
@@ -43,10 +52,9 @@ async function run() {
     // booking
     // booking
     app.get("/bookings", async (req, res) => {
-      let query ={};
-      if(req.query?.email){
-        query={email:req.query.email}
-
+      let query = {};
+      if (req.query?.email) {
+        query = { email: req.query.email };
       }
       const result = await bookingCollection.find(query).toArray();
       res.send(result);
@@ -63,27 +71,27 @@ async function run() {
       }
     });
     // Update booking status (Approve / Pending ইত্যাদি)
-app.patch("/bookings/:id", async (req, res) => {
-  const id = req.params.id;
-  const { status } = req.body;
-  const filter = { _id: new ObjectId(id) };
-  const updateDoc = {
-    $set: { status: status },
-  };
-  const result = await bookingCollection.updateOne(filter, updateDoc);
-  res.send(result);
-});
+    app.patch("/bookings/:id", async (req, res) => {
+      const id = req.params.id;
+      const { status } = req.body;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: { status: status },
+      };
+      const result = await bookingCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
 
-// Delete a booking
-app.delete("/bookings/:id", async (req, res) => {
-  const id = req.params.id;
-  const query = { _id: new ObjectId(id) };
-  const result = await bookingCollection.deleteOne(query);
-  res.send(result);
-});
+    // Delete a booking
+    app.delete("/bookings/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await bookingCollection.deleteOne(query);
+      res.send(result);
+    });
 
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
+    // await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
